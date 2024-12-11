@@ -155,7 +155,7 @@ input[type="button"]:hover {
     img {
         position: absolute;
         top: 5px; 
-        right: 5px; 
+        right: 2px; 
         max-width: 25%; 
         height: auto; 
     }
