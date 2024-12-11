@@ -1,0 +1,167 @@
+<!DOCTYPE HTML>
+<html lang="pt-br">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>joicinha</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <img src="./img/gatinho2.png" alt="" width="120">  
+
+    <div class="container">
+        <h1>Consulta de APIs</h1>
+
+        <div class="info-princi">
+            <p>Consulte informações de DDD, Feriados e ISBN. Para isso, complete os campos abaixo e clique nos botões para ver os resultados.</p>
+            <p>Para DDD: Apenas DDD brasileiro - 2 dígitos </p>
+            <p>Para FERIADOS: Intervalo de ano suportado apenas entre 1900 e 2199 - 4 dígitos</p>
+            <p>Para ISBN: Apenas ISBN-10 - 10 dígitos e SBN-13 - 13 dígitos</p>
+        </div>
+ 
+    <label for="ddd">Digite o DDD para obter informações sobre a região correspondente</label>
+    <input type="number" id="ddd" placeholder="Ex: 55"><br>
+    <input type="button" value="Consultar DDD" id="consultaDdd"><br><br>
+
+    <label for="ano">Digite o ANO desejado para consultar os feriados correspondentes</label>
+    <input type="number" id="ano" placeholder="Ex: 2024"><br>
+    <input type="button" value="Consultar Feriados" id="consultaFeriados"><br><br>
+
+    <label for="isbn">Digite o ISBN para obter informações sobre o livro correspondente</label>
+    <input type="text" id="isbn" placeholder="Ex: 978-8545702870"><br>
+    <input type="button" value="Consultar ISBN" id="consultaIsbn"><br><br>
+
+    <div id="mostra"></div>
+
+    <script>
+
+        async function consultaDdd() {
+            let ddd = document.querySelector('#ddd').value;
+            const url = 'https://brasilapi.com.br/api/ddd/v1/' + ddd;
+            try {
+                let resposta = await fetch(url);
+                let js = await resposta.json();
+                mostraDadosDdd(js);
+            } catch (err) {
+                const painel = document.querySelector('#mostra');
+                let texto = "<h1>Verifique se o número do DDD está correto</h1>";
+                texto += "Mensagem: " + err;
+                painel.innerHTML = texto;
+            }
+        }
+
+        function mostraDadosDdd(js) {
+    const painel = document.querySelector('#mostra');
+    let texto = "<h1>Dados do DDD</h1>";
+    texto += "Estado: " + (js.state || "N/A") + "<br>";
+    
+    let cidadesTexto = "N/A";
+    if (js.cities && Array.isArray(js.cities) && js.cities.length > 0) {
+        cidadesTexto = js.cities.join(", ");
+    }
+    
+    texto += "Cidades: " + cidadesTexto + "<br>";
+    painel.innerHTML = texto;
+}
+
+        async function consultaFeriados() {
+            let ano = document.querySelector('#ano').value;
+            const url = 'https://brasilapi.com.br/api/feriados/v1/' + ano;
+            try {
+                let resposta = await fetch(url);
+                let js = await resposta.json();
+                mostraDadosFeriados(js);
+            } catch (err) {
+                const painel = document.querySelector('#mostra');
+                let texto = "<h1>Verifique se o ANO foi escrito corretamente</h1>";
+                texto += "Mensagem: " + err;
+                painel.innerHTML = texto;
+            }
+        }
+
+        function mostraDadosFeriados(js) {
+            const painel = document.querySelector('#mostra');
+            let texto = "<h1>FERIADOS</h1>";
+            js.forEach(feriado => {
+                texto += "Data: " + feriado.date + " - Nome: " + feriado.name + "<br>";
+            });
+            painel.innerHTML = texto;
+        }
+
+        async function consultaIsbn() {
+            let isbn = document.querySelector('#isbn').value;
+            const url = 'https://brasilapi.com.br/api/isbn/v1/' + isbn;
+            try {
+                let resposta = await fetch(url);
+                let js = await resposta.json();
+                mostraDadosIsbn(js);
+            } catch (err) {
+                const painel = document.querySelector('#mostra');
+                let texto = "<h1>Verifique se os números do ISBN foram escritos corretamente ou se está faltando algum</h1>";
+                texto += "Mensagem: " + err;
+                painel.innerHTML = texto;
+            }
+        }
+
+        function mostraDadosIsbn(js) {
+    const painel = document.querySelector('#mostra');
+    let texto = "<h1>Dados do ISBN</h1>";
+    texto += "Título: " + (js.title || "N/A") + "<br>";
+    texto += "Subtítulo: " + (js.subtitle || "N/A") + "<br>";
+
+    if (Array.isArray(js.authors)) {
+        texto += "Autor(es): " + js.authors.join(", ") + "<br>";
+    } else {
+        texto += "Autor(es): N/A<br>";
+    }
+
+    texto += "Editora: " + (js.publisher || "N/A") + "<br>";
+    texto += "Sinopse: " + (js.synopsis || "N/A") + "<br>";
+
+    // aqqq falta arrumar ta dendo erro
+    if (js.dimensions) {
+        if (typeof js.dimensions === "string") {
+            texto += "Dimensões: " + js.dimensions + "<br>";
+        } else if (typeof js.dimensions === "object") {
+            texto += "Dimensões: ";
+            texto += (js.dimensions.width || "N/A") + " x ";
+            texto += (js.dimensions.height || "N/A") + " x ";
+            texto += (js.dimensions.unit || "N/A") + "<br>";
+        }
+    } else {
+        texto += "Dimensões: N/A<br>";
+    }
+
+    texto += "Ano: " + (js.year || "N/A") + "<br>";
+    texto += "Formato: " + (js.format || "N/A") + "<br>";
+    texto += "Número de páginas: " + (js.page_count || "N/A") + "<br>";
+
+    if (Array.isArray(js.subjects)) {
+        texto += "Assuntos: " + js.subjects.join(", ") + "<br>";
+    } else {
+        texto += "Assuntos: N/A<br>";
+    }
+
+    texto += "Localização: " + (js.location || "N/A") + "<br>";
+    if (js.retail_price && typeof js.retail_price === 'object') {  
+        texto += "Preço de venda: " + 
+                 (js.retail_price.currency || "N/A") + " " + 
+                 (js.retail_price.amount || "N/A") + "<br>";
+    } else {
+        texto += "Preço de venda: N/A<br>";
+    } 
+    texto += "URL da Capa: " + (js.cover_url || "N/A") + "<br>"; 
+    texto += "Fornecedor: " + (js.provider || "N/A") + "<br>";
+    painel.innerHTML = texto;
+}
+
+        document.querySelector('#consultaDdd').addEventListener('click', consultaDdd);
+        document.querySelector('#consultaFeriados').addEventListener('click', consultaFeriados);
+        document.querySelector('#consultaIsbn').addEventListener('click', consultaIsbn);
+    </script>
+</body>
+
+</html>
